@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 import argparse
 import logging
+import os
 from helper import expected_rewards, PolicyGradient, ValueFunction
 
 parser = argparse.ArgumentParser(description='Policy gradient reinforcement \
