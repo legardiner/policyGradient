@@ -24,7 +24,7 @@ parser.add_argument('--hidden_state_size', default=16, help='Number of neurons \
                     in fully connected layers')
 parser.add_argument('--baseline', default=True, help='Boolean to use baseline method to \
                     reduce variance')
-parser.add_argument('--log_dir', default='logs/', help='Path to directory for logs for \
+parser.add_argument('--log_dir', default='logs/cartpole/', help='Path to directory for logs for \
                     tensorboard visualization')
 parser.add_argument('--run_num', required=True, help='Provide a run number to correctly log')
 

@@ -23,7 +23,7 @@ parser.add_argument('--hidden_state_size', default=16, help='Number of neurons \
                     in fully connected layers')
 parser.add_argument('--baseline', default=True, help='Boolean to use baseline method to \
                     reduce variance')
-parser.add_argument('--log_dir', default='logs/', help='Path to directory for logs for \
+parser.add_argument('--log_dir', default='logs/pong/', help='Path to directory for logs for \
                     tensorboard visualization')
 parser.add_argument('--run_num', required=True, help='Provide a run number to correctly log')
 
@@ -70,6 +70,11 @@ def main(args):
                                  output_size=args.output_size,
                                  hidden_state_size=args.hidden_state_size)
     saver = tf.train.Saver()
+
+    # Create directory for logs
+    if not os.path.exists(os.path.join(args.log_dir, args.run_num)):
+        logging.info("Creating directory {0}".format(os.path.join(args.log_dir, args.run_num)))
+        os.mkdir(os.path.join(args.log_dir, args.run_num))
 
     # Start tensorflow
     with tf.Session() as sess:
@@ -153,11 +158,10 @@ def main(args):
                     network.avg_epoch_reward: avg_epoch_reward}
             loss_, _, summary = sess.run([network.loss, network.train, network.summary_op], feed_dict=feed)
 
-            writer.add_summary(summary, epoch)
-
             # Log and save models
             logger.info("Epoch: {0}\tAvg Reward: {1}".format(epoch,
                                                              avg_epoch_reward))
+            writer.add_summary(summary, epoch)
             if epoch % 100 == 0:
                     saver.save(sess, "./model/model{0}.ckpt".format(epoch))
                     print("Model Saved")
