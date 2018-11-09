@@ -72,7 +72,7 @@ class PolicyGradient():
                 self.inputs_, hidden_state_size,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
             self.fc2 = tf.contrib.layers.fully_connected(
-                self.fc1, action_size,
+                self.fc1, hidden_state_size,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
             self.fc3 = tf.contrib.layers.fully_connected(
                 self.fc2, action_size,
@@ -126,7 +126,7 @@ class ValueFunction():
                 self.inputs_, hidden_state_size,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
             self.fc2 = tf.contrib.layers.fully_connected(
-                self.fc1, action_size,
+                self.fc1, hidden_state_size,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
             self.fc3 = tf.contrib.layers.fully_connected(
                 self.fc2, output_size,
