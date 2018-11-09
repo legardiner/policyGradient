@@ -146,11 +146,12 @@ def main(args):
                 feed = {valueNetwork.inputs_: np.vstack(epoch_states)}
                 V_t = sess.run(valueNetwork.fc3, feed_dict=feed)
                 # Apply the baseline to the discounted cummulative rewards
+                unadjusted_epoch_rewards = epoch_rewards
                 epoch_rewards -= np.hstack(V_t)
 
                 # Train the value network
                 feed = {valueNetwork.inputs_: np.vstack(epoch_states),
-                        valueNetwork.expected_episode_rewards_: epoch_rewards}
+                        valueNetwork.expected_episode_rewards_: unadjusted_epoch_rewards}
                 loss_, _ = sess.run([valueNetwork.loss, valueNetwork.train],
                                     feed_dict=feed)
             # Train the policy gradient
