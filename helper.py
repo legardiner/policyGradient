@@ -31,7 +31,6 @@ def expected_rewards(episode_rewards, discount_rate, normalize=True):
 
     return discounted_episode_rewards.tolist()
 
-
 class PolicyGradient():
     """Policy Gradient Neural Network
 
@@ -68,6 +67,7 @@ class PolicyGradient():
                 tf.int32, [None, action_size], name="actions")
             self.expected_episode_rewards_ = tf.placeholder(
                 tf.float32, [None, ], name="expected_episode_rewards")
+            self.avg_epoch_reward = tf.placeholder(tf.float32, name="avg_epoch_reward")
             self.fc1 = tf.contrib.layers.fully_connected(
                 self.inputs_, hidden_state_size,
                 weights_initializer=tf.contrib.layers.xavier_initializer())
@@ -88,6 +88,10 @@ class PolicyGradient():
         with tf.name_scope("train"):
             self.optimizer = tf.train.AdamOptimizer(learning_rate)
             self.train = self.optimizer.minimize(self.loss)
+        with tf.name_scope("summaries"):
+            tf.summary.scalar("loss", self.loss)
+            tf.summary.scalar("avg_epoch_reward", self.avg_epoch_reward)
+            self.summary_op = tf.summary.merge_all()
 
 
 class ValueFunction():

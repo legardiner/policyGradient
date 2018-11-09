@@ -4,19 +4,18 @@ import tensorflow as tf
 import numpy as np
 import argparse
 import logging
-import os
 from helper import expected_rewards, PolicyGradient, ValueFunction
 
 parser = argparse.ArgumentParser(description='Policy gradient reinforcement \
                                  learning model for cartpole game')
-parser.add_argument('--num_episodes', default=1000, help='Number of episodes \
+parser.add_argument('--num_episodes', default=2, help='Number of episodes \
                     to be sampled during an epoch')
 parser.add_argument('--learning_rate', default=0.01, help='Learning rate for \
                     optimizer')
 parser.add_argument('--discount_rate', default=0.95, help='Discount rate for \
                     future rewards')
 parser.add_argument('--epochs', default=1000, help='Number of epochs to train')
-parser.add_argument('--state_size', default=4, help='Number of state values')
+parser.add_argument('--state_size', default=6400, help='Number of state values')
 parser.add_argument('--action_size', default=2, help='Number of actions')
 parser.add_argument('--output_size', default=1, help='Number of output neurons \
                     for value function network')
@@ -29,9 +28,33 @@ parser.add_argument('--log_dir', default='logs/', help='Path to directory for lo
 parser.add_argument('--run_num', required=True, help='Provide a run number to correctly log')
 
 
+def preprocess(image):
+    """Preprocesses a state image for input into the network
+    
+    Given an image (state) represented by a 210x160x3 numpy array, downsample
+    to reduce trainable parameters and reduce noise by only selected paddles
+
+    Args:
+        image (numpy.ndarray): image vector for a game state
+
+    Returns:
+        process_image (numpy.ndarray): 80 x 80 preprocessed image vector for a game state
+    """
+    # Crop picture
+    image = image[35:195] 
+    # Downsample by factor of 2
+    image = image[::2,::2,0]
+    # Erase background 
+    image[image == 144] = 0 
+    image[image == 109] = 0
+    # Set everything else (paddles, ball) to 1
+    image[image != 0] = 1 
+    processed_image = np.reshape(image.astype(np.float).ravel(), (80, 80))
+    return processed_image
+  
 def main(args):
     # Load game
-    env = gym.make("CartPole-v0")
+    env = gym.make("Pong-v0")
     # Initialize the game
     state = env.reset()
 
@@ -48,41 +71,38 @@ def main(args):
                                  hidden_state_size=args.hidden_state_size)
     saver = tf.train.Saver()
 
-    # Create directory for logs
-    if not os.path.exists(os.path.join(args.log_dir, args.run_num)):
-        logging.info("Creating directory {0}".format(os.path.join(args.log_dir, args.run_num)))
-        os.mkdir(os.path.join(args.log_dir, args.run_num))
-
     # Start tensorflow
     with tf.Session() as sess:
-        writer = tf.summary.FileWriter(os.path.join(args.log_dir, args.run_num), sess.graph)
         sess.run(tf.global_variables_initializer())
         # Initialize list to track progress
         avg_epoch_rewards = []
-        for epoch in range(int(args.epochs)):
-
+        for epoch in range(args.epochs):
             # Initialize episode states, actions, rewards, and total rewards
             epoch_states, epoch_actions, epoch_rewards = [], [], []
             total_episode_rewards = []
 
-            for episode in range(int(args.num_episodes)):
+            for episode in range(args.num_episodes):
                 # Initialize episode states, actions, and rewards
                 episode_states, episode_actions, episode_rewards = [], [], []
                 # Initialize the game for the episode
                 state = env.reset()
+
                 # Run the game/episode until it's done
                 while True:
+                    # Flatten state for network input
+                    state = preprocess(state).reshape(1, 6400)
+                
                     # Get distribution of actions from softmax
-                    feed = {network.inputs_: state.reshape((1, *state.shape))}
+                    feed = {network.inputs_: state}
                     action_dist = sess.run(network.softmax, feed_dict=feed)
 
-                    # Sample action from distribution
+                    # Sample action from distribution and add two to select left (2) or right (3)
                     action = np.random.choice(range(action_dist.shape[1]),
-                                              p=action_dist.flatten())
+                                              p=action_dist.flatten()) + 2
 
                     # Create one hot encoding for action for network input
                     one_hot_action_ = np.zeros(args.action_size)
-                    one_hot_action_[action] = 1
+                    one_hot_action_[action-2] = 1
 
                     # Take action in game
                     next_state, reward, done, _ = env.step(action)
@@ -133,14 +153,14 @@ def main(args):
                     network.avg_epoch_reward: avg_epoch_reward}
             loss_, _, summary = sess.run([network.loss, network.train, network.summary_op], feed_dict=feed)
 
+            writer.add_summary(summary, epoch)
+
             # Log and save models
             logger.info("Epoch: {0}\tAvg Reward: {1}".format(epoch,
                                                              avg_epoch_reward))
-            writer.add_summary(summary, epoch)
             if epoch % 100 == 0:
                     saver.save(sess, "./model/model{0}.ckpt".format(epoch))
                     print("Model Saved")
-
 
 if __name__ == "__main__":
     log_fmt = '%(asctime)s - %(levelname)s - %(message)s'
