@@ -61,15 +61,15 @@ def main(args):
 
     # Reset tensorflow graph and initialize networks
     tf.reset_default_graph()
-    network = PolicyGradient(learning_rate=args.learning_rate,
-                             state_size=args.state_size,
-                             action_size=args.action_size,
-                             hidden_state_size=args.hidden_state_size)
-    valueNetwork = ValueFunction(learning_rate=args.learning_rate,
-                                 state_size=args.state_size,
-                                 action_size=args.action_size,
-                                 output_size=args.output_size,
-                                 hidden_state_size=args.hidden_state_size)
+    network = PolicyGradient(learning_rate=float(args.learning_rate),
+                             state_size=int(args.state_size),
+                             action_size=int(args.action_size),
+                             hidden_state_size=int(args.hidden_state_size))
+    valueNetwork = ValueFunction(learning_rate=float(args.learning_rate),
+                                 state_size=int(args.state_size),
+                                 action_size=int(args.action_size),
+                                 output_size=int(args.output_size),
+                                 hidden_state_size=int(args.hidden_state_size))
     saver = tf.train.Saver()
 
     # Create directory for logs
@@ -79,15 +79,16 @@ def main(args):
 
     # Start tensorflow
     with tf.Session() as sess:
+        writer = tf.summary.FileWriter(os.path.join(args.log_dir, args.run_num), sess.graph)
         sess.run(tf.global_variables_initializer())
         # Initialize list to track progress
         avg_epoch_rewards = []
-        for epoch in range(args.epochs):
+        for epoch in range(int(args.epochs)):
             # Initialize episode states, actions, rewards, and total rewards
             epoch_states, epoch_actions, epoch_rewards = [], [], []
             total_episode_rewards = []
 
-            for episode in range(args.num_episodes):
+            for episode in range(int(args.num_episodes)):
                 # Initialize episode states, actions, and rewards
                 episode_states, episode_actions, episode_rewards = [], [], []
                 # Initialize the game for the episode
@@ -107,7 +108,7 @@ def main(args):
                                               p=action_dist.flatten()) + 2
 
                     # Create one hot encoding for action for network input
-                    one_hot_action_ = np.zeros(args.action_size)
+                    one_hot_action_ = np.zeros(int(args.action_size))
                     one_hot_action_[action-2] = 1
 
                     # Take action in game
@@ -123,7 +124,7 @@ def main(args):
                     if done:
                         # Calculate the discounted cummulative reward
                         expected_episode_rewards = expected_rewards(
-                            episode_rewards, args.discount_rate)
+                            episode_rewards, float(args.discount_rate))
 
                         # Calculate and store the total episode reward
                         total_episode_reward = sum(episode_rewards)

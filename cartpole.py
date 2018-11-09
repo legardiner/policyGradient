@@ -37,15 +37,15 @@ def main(args):
 
     # Reset tensorflow graph and initialize networks
     tf.reset_default_graph()
-    network = PolicyGradient(learning_rate=args.learning_rate,
-                             state_size=args.state_size,
-                             action_size=args.action_size,
-                             hidden_state_size=args.hidden_state_size)
-    valueNetwork = ValueFunction(learning_rate=args.learning_rate,
-                                 state_size=args.state_size,
-                                 action_size=args.action_size,
-                                 output_size=args.output_size,
-                                 hidden_state_size=args.hidden_state_size)
+    network = PolicyGradient(learning_rate=float(args.learning_rate),
+                             state_size=int(args.state_size),
+                             action_size=int(args.action_size),
+                             hidden_state_size=int(args.hidden_state_size))
+    valueNetwork = ValueFunction(learning_rate=float(args.learning_rate),
+                                 state_size=int(args.state_size),
+                                 action_size=int(args.action_size),
+                                 output_size=int(args.output_size),
+                                 hidden_state_size=int(args.hidden_state_size))
     saver = tf.train.Saver()
 
     # Create directory for logs
@@ -81,7 +81,7 @@ def main(args):
                                               p=action_dist.flatten())
 
                     # Create one hot encoding for action for network input
-                    one_hot_action_ = np.zeros(args.action_size)
+                    one_hot_action_ = np.zeros(int(args.action_size))
                     one_hot_action_[action] = 1
 
                     # Take action in game
@@ -97,7 +97,7 @@ def main(args):
                     if done:
                         # Calculate the discounted cummulative reward
                         expected_episode_rewards = expected_rewards(
-                            episode_rewards, args.discount_rate)
+                            episode_rewards, float(args.discount_rate))
 
                         # Calculate and store the total episode reward
                         total_episode_reward = sum(episode_rewards)
