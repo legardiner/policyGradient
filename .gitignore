@@ -1,4 +1,6 @@
 .ipynb_checkpoints/
-logs/
+logs/pong/*
+logs/cartpole/*
 __pycache__/
-model
+model/cartpole/*
+model/pong/*

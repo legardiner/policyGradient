@@ -9,18 +9,18 @@ from helper import expected_rewards, PolicyGradient, ValueFunction
 
 parser = argparse.ArgumentParser(description='Policy gradient reinforcement \
                                  learning model for cartpole game')
-parser.add_argument('--num_episodes', default=1000, help='Number of episodes \
+parser.add_argument('--num_episodes', default=100, help='Number of episodes \
                     to be sampled during an epoch')
-parser.add_argument('--learning_rate', default=0.01, help='Learning rate for \
+parser.add_argument('--learning_rate', default=0.001, help='Learning rate for \
                     optimizer')
 parser.add_argument('--discount_rate', default=0.95, help='Discount rate for \
                     future rewards')
-parser.add_argument('--epochs', default=1000, help='Number of epochs to train')
+parser.add_argument('--epochs', default=400, help='Number of epochs to train')
 parser.add_argument('--state_size', default=4, help='Number of state values')
 parser.add_argument('--action_size', default=2, help='Number of actions')
 parser.add_argument('--output_size', default=1, help='Number of output neurons \
                     for value function network')
-parser.add_argument('--hidden_state_size', default=16, help='Number of neurons \
+parser.add_argument('--hidden_state_size', default=256, help='Number of neurons \
                     in fully connected layers')
 parser.add_argument('--baseline', default=True, help='Boolean to use baseline method to \
                     reduce variance')
