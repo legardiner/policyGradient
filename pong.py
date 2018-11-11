@@ -166,7 +166,7 @@ def main(args):
                                                              avg_epoch_reward))
             writer.add_summary(summary, epoch)
             if epoch % 100 == 0:
-                    saver.save(sess, "./model/model{0}.ckpt".format(epoch))
+                    saver.save(sess, "./model/pong/model{0}.ckpt".format(epoch))
                     print("Model Saved")
 
 if __name__ == "__main__":
